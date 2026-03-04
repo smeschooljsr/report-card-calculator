@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Shefa Result Master 2026</title>
+    <style>
+        :root { --shefa-pink: #ff85a2; --navy: #1a237e; --bg: #fdf2f4; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: var(--bg); margin: 0; padding: 10px; padding-bottom: 140px; }
+        
+        .header { text-align: center; background: white; padding: 15px; border-radius: 15px; border: 2px solid var(--shefa-pink); margin-bottom: 15px; }
+        h1 { font-size: 16px; margin: 0; color: var(--navy); text-transform: uppercase; }
+        
+        .section-label { font-size: 11px; font-weight: 800; color: var(--navy); margin: 15px 0 5px 5px; text-transform: uppercase; display: block; }
+        
+        .subject-card { background: white; border-radius: 12px; padding: 12px; margin-bottom: 10px; border-left: 5px solid var(--shefa-pink); box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .sub-title { font-weight: 800; color: var(--navy); margin-bottom: 10px; display: block; font-size: 14px; }
+        
+        .grid-row { display: grid; grid-template-columns: repeat(2, 1fr) 0.8fr 0.8fr; gap: 8px; margin-bottom: 10px; }
+        .input-group { text-align: center; }
+        label { font-size: 7px; font-weight: bold; color: #777; display: block; margin-bottom: 3px; text-transform: uppercase; }
+        
+        input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; text-align: center; font-size: 14px; font-weight: bold; box-sizing: border-box; transition: all 0.2s; }
+        input:focus { border-color: var(--shefa-pink); outline: none; background: #fff9fa; }
+        
+        /* Red Alert Styling */
+        input.invalid { color: #d32f2f !important; border: 2px solid #d32f2f !important; background: #ffebee !important; animation: shake 0.2s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(3px); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
+
+        .totals-row { background: #f0f0f0; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: var(--navy); }
+        .avg-row { background: #e3f2fd; border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; color: #1565c0; }
+
+        .sticky-summary { 
+            position: fixed; bottom: 0; left: 0; right: 0; 
+            background: var(--navy); color: white; padding: 15px; 
+            border-radius: 20px 20px 0 0; display: flex; flex-direction: column;
+            box-shadow: 0 -5px 15px rgba(0,0,0,0.3); z-index: 100; 
+        }
+        .term-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0px; }
+        .term-box { 
+            background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; text-align: center;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .t-label { font-size: 9px; text-transform: uppercase; display: block; margin-bottom: 4px; color: var(--shefa-pink); font-weight: 800; }
+        .t-val { font-size: 16px; font-weight: 800; display: block; }
+        .t-perc { font-size: 12px; opacity: 0.9; font-weight: bold; }
+        .t-grade { font-size: 11px; color: #ffeb3b; display: block; font-weight: bold; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>Shefa's Modern English School</h1>
+    <div style="font-size: 10px; color: #555;"> Report Card Calculator | Admin Edition</div>
+</div>
+
+<span class="section-label">Academic Records</span>
+<div id="subjectsContainer"></div>
+
+<span class="section-label">Conduct & Traits</span>
+<div class="subject-card">
+    <div class="grid-row" style="grid-template-columns: repeat(4, 1fr);">
+        <div><label>Regularity</label><input type="text" placeholder="A+"></div>
+        <div><label>Punctuality</label><input type="text" placeholder="A"></div>
+        <div><label>Discipline</label><input type="text" placeholder="B"></div>
+        <div><label>Cleanliness</label><input type="text" placeholder="A+"></div>
+    </div>
+</div>
+
+<div class="sticky-summary">
+    <div class="term-grid">
+        <div class="term-box">
+            <span class="t-label">Half Yearly Result</span>
+            <span class="t-val" id="t1Total">0</span>
+            <span class="t-perc" id="t1Perc">0%</span>
+            <span class="t-grade" id="t1GradeComment">-</span>
+        </div>
+        <div class="term-box">
+            <span class="t-label">Final Year Result</span>
+            <span class="t-val" id="t2Total">0</span>
+            <span class="t-perc" id="t2Perc">0%</span>
+            <span class="t-grade" id="t2GradeComment">-</span>
+        </div>
+    </div>
+</div>
+
+<script>
+    const subjects = [
+        "English - Language", "English - Literature", "Hindi - Language", "Hindi - Literature", 
+        "Maths", "Science", "Physics", "Chemistry", "Biology", "Urdu", "Computers", "General Knowledge", "Drawing", 
+        "Hist./Civ.", "Geog.", "The Study of Islam", "Activity", "Game", "Music", "Lab Work"
+    ];
+
+    const container = document.getElementById('subjectsContainer');
+
+    subjects.forEach((sub) => {
+        const card = document.createElement('div');
+        card.className = 'subject-card';
+        card.innerHTML = `
+            <span class="sub-title">${sub}</span>
+            <div class="grid-row subject-block">
+                <div class="input-group"><label>Unit 1 (40)</label><input type="number" class="m t1" data-max="40"></div>
+                <div class="input-group"><label>H.Y. (60)</label><input type="number" class="m t1" data-max="60"></div>
+                <div class="totals-row"><label>TERM 1</label><span class="t1-subtotal">0</span></div>
+                <div class="avg-row"><label>AVG</label><span class="t1-avg">0</span></div>
+            </div>
+            <div class="grid-row subject-block">
+                <div class="input-group"><label>Unit 2 (40)</label><input type="number" class="m t2" data-max="40"></div>
+                <div class="input-group"><label>Final (60)</label><input type="number" class="m t2" data-max="60"></div>
+                <div class="totals-row"><label>TERM 2</label><span class="t2-subtotal">0</span></div>
+                <div class="avg-row"><label>AVG</label><span class="t2-avg">0</span></div>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+
+    function getGradeInfo(perc) {
+        if (perc >= 90) return { g: "A+", r: "Excellent" };
+        if (perc >= 80) return { g: "A", r: "O.S." };
+        if (perc >= 70) return { g: "B", r: "V. Good" };
+        if (perc >= 60) return { g: "C", r: "Good" };
+        if (perc >= 50) return { g: "D", r: "Average" };
+        if (perc >= 40) return { g: "E", r: "Pass" };
+        return { g: "F", r: "Needs Imp." };
+    }
+
+    document.addEventListener('input', (e) => {
+        const card = e.target.closest('.subject-card');
+        
+        // Validation check for every input
+        if (e.target.classList.contains('m')) {
+            const val = parseFloat(e.target.value) || 0;
+            const max = parseFloat(e.target.getAttribute('data-max'));
+            if (val > max) {
+                e.target.classList.add('invalid');
+            } else {
+                e.target.classList.remove('invalid');
+            }
+        }
+
+        if (card) {
+            // FIX: Calculating average as (Unit + Exam) divided by 2
+            let t1Sum = 0; card.querySelectorAll('.t1').forEach(i => t1Sum += (parseFloat(i.value) || 0));
+            card.querySelector('.t1-subtotal').innerText = Math.round(t1Sum);
+            card.querySelector('.t1-avg').innerText = (t1Sum / 2).toFixed(1); 
+
+            let t2Sum = 0; card.querySelectorAll('.t2').forEach(i => t2Sum += (parseFloat(i.value) || 0));
+            card.querySelector('.t2-subtotal').innerText = Math.round(t2Sum);
+            card.querySelector('.t2-avg').innerText = (t2Sum / 2).toFixed(1); 
+        }
+
+        let t1Obtained = 0, t1Max = 0;
+        let t2Obtained = 0, t2Max = 0;
+
+        document.querySelectorAll('.subject-card').forEach(subCard => {
+            subCard.querySelectorAll('.t1').forEach(input => {
+                if(input.value !== "") {
+                    t1Obtained += parseFloat(input.value) || 0;
+                    t1Max += parseFloat(input.getAttribute('data-max'));
+                }
+            });
+            subCard.querySelectorAll('.t2').forEach(input => {
+                if(input.value !== "") {
+                    t2Obtained += parseFloat(input.value) || 0;
+                    t2Max += parseFloat(input.getAttribute('data-max'));
+                }
+            });
+        });
+
+        let t1Perc = t1Max > 0 ? (t1Obtained / t1Max) * 100 : 0;
+        let t1Info = getGradeInfo(t1Perc);
+        document.getElementById('t1Total').innerText = Math.round(t1Obtained);
+        document.getElementById('t1Perc').innerText = Math.round(t1Perc) + "%";
+        document.getElementById('t1GradeComment').innerText = t1Max > 0 ? `${t1Info.g} (${t1Info.r})` : "-";
+
+        let t2Perc = t2Max > 0 ? (t2Obtained / t2Max) * 100 : 0;
+        let t2Info = getGradeInfo(t2Perc);
+        document.getElementById('t2Total').innerText = Math.round(t2Obtained);
+        document.getElementById('t2Perc').innerText = Math.round(t2Perc) + "%";
+        document.getElementById('t2GradeComment').innerText = t2Max > 0 ? `${t2Info.g} (${t2Info.r})` : "-";
+    });
+</script>
+
+</body>
+</html>
